@@ -150,6 +150,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "backuplit"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "flate2",
+ "google-cloud",
+ "inotify",
+ "tar",
+ "tokio",
+]
+
+[[package]]
 name = "base64"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -427,19 +440,6 @@ dependencies = [
  "pin-project-lite",
  "pin-utils",
  "slab",
-]
-
-[[package]]
-name = "gc_fs_backup"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "flate2",
- "google-cloud",
- "inotify",
- "tar",
- "tokio",
 ]
 
 [[package]]
