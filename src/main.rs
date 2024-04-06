@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
+use backuplit::BackuplitBuilder;
 use clap::Parser;
-use gc_fs_backup::GcFsBackupBuilder;
 
 #[derive(Parser)]
 #[clap(version = "1.0", author = "Kody Low <kodylow7@gmail.com>")]
@@ -24,14 +24,17 @@ struct Cli {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), anyhow::Error> {
     let cli: Cli = Cli::parse();
 
-    let backup = GcFsBackupBuilder::new()
+    let b = BackuplitBuilder::new()
         .db_path(cli.db_path.into())
         .bucket_id(cli.bucket_id.into())
         .credential(cli.credential.into())
         .backup_name(cli.backup_name.into())
         .build();
-    backup.backup_directory_contents().await.unwrap();
+
+    b.backup_directory_contents().await?;
+
+    Ok(())
 }

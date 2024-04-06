@@ -13,7 +13,7 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.81"
-clap = "4.5.4"
+clap = { version = "4.4.13", features = ["derive", "env"] }
 flate2 = "1.0.28"
 google-cloud = { version = "0.2.1", features = ["storage"] }
 inotify = "0.10.2"
