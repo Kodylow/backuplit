@@ -68,10 +68,6 @@
       in {
         legacyPackages = outputs;
         packages = { default = outputs.backuplit; };
-        devShells = fmLib.devShells // {
-          default = fmLib.devShells.default.overrideAttrs (prev: {
-            nativeBuildInputs = [ pkgs.mprocs ] ++ prev.nativeBuildInputs;
-          });
-        };
+        devShells = flakeboxLib.mkShells { packages = [ pkgs.mprocs ]; };
       });
 }
