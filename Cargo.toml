@@ -19,3 +19,5 @@ google-cloud = { version = "0.2.1", features = ["storage"] }
 inotify = "0.10.2"
 tar = "0.4.40"
 tokio = { version = "1.37.0", features = ["full"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }

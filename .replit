@@ -10,3 +10,6 @@ requiredFiles = [".replit"]
 
 [deployment]
 run = ["sh", "-c", "cargo run"]
+
+[objectStorage]
+defaultBucketID = "replit-objstore-2b4fb957-0729-4da1-8bc7-cf3f2102d189"

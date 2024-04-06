@@ -7,7 +7,8 @@ use flate2::Compression;
 use inotify::{EventMask, Inotify, WatchMask};
 use tar::Builder;
 use tokio::sync::Mutex;
-use tokio::time::sleep;
+use tokio::time::{sleep, Instant};
+use tracing::info;
 
 pub enum BackupTrigger {
     Interval(Duration),
@@ -16,13 +17,19 @@ pub enum BackupTrigger {
 
 impl Default for BackupTrigger {
     fn default() -> Self {
-        let default_masks = vec![EventMask::CLOSE_WRITE | EventMask::CREATE];
+        let default_masks = vec![
+            EventMask::CLOSE_WRITE,
+            EventMask::CREATE,
+            EventMask::DELETE,
+            EventMask::MODIFY,
+            EventMask::CLOSE_NOWRITE,
+        ];
         Self::EventMasks(default_masks)
     }
 }
 
 pub struct Backuplit {
-    db_path: PathBuf,
+    dir_path: PathBuf,
     backup_name: Option<String>,
     bucket_id: String,
     credential: String,
@@ -31,18 +38,16 @@ pub struct Backuplit {
 
 impl Backuplit {
     pub async fn backup_directory_contents(&self) -> Result<(), anyhow::Error> {
-        let dir_path = &self.db_path;
+        info!("Starting backup of directory contents");
+        let dir_path = &self.dir_path;
         let bucket_id = &self.bucket_id;
         let credential = &self.credential;
 
         let tarball_data = Vec::new();
         let gz_encoder = GzEncoder::new(tarball_data, Compression::default());
         let mut ar = Builder::new(gz_encoder);
-        let backup_name = self
-            .backup_name
-            .clone()
-            .unwrap_or("fedimint_db_backup".to_string());
-        ar.append_dir_all(backup_name, dir_path)?;
+        let backup_name = self.backup_name.clone().unwrap_or("backup".to_string());
+        ar.append_dir_all(&backup_name, dir_path)?;
 
         let gz_encoder = ar.into_inner()?;
         let compressed_tarball_bytes = gz_encoder.finish()?;
@@ -52,45 +57,57 @@ impl Backuplit {
         ));
         let mut bucket = client.lock().await.bucket(bucket_id).await?;
         bucket
-            .create_object(
-                "fedimint_db_backup.tar.gz",
-                compressed_tarball_bytes,
-                "application/gzip",
-            )
+            .create_object(&backup_name, compressed_tarball_bytes, "application/gzip")
             .await?;
+
+        info!("Directory backup completed successfully");
 
         Ok(())
     }
 
     pub async fn watch_and_backup(&self) {
         match &self.backup_trigger {
-            BackupTrigger::Interval(duration) => loop {
-                sleep(*duration).await;
-                self.backup_directory_contents()
-                    .await
-                    .expect("Failed to backup directory contents");
-            },
+            BackupTrigger::Interval(duration) => {
+                info!(?duration, "Starting interval-based backup trigger");
+                loop {
+                    sleep(*duration).await;
+                    info!("Interval backup triggered");
+                    self.backup_directory_contents()
+                        .await
+                        .expect("Failed to backup directory contents");
+                }
+            }
             BackupTrigger::EventMasks(masks) => {
-                let db_path = self.db_path.clone();
+                info!(?masks, "Starting event masks-based backup trigger");
+                let dir_path = self.dir_path.clone();
                 let mut inotify = Inotify::init().expect("Failed to initialize inotify");
                 let watch_mask = masks.iter().fold(WatchMask::empty(), |acc, mask| {
                     acc | WatchMask::from_bits_truncate(mask.bits())
                 });
                 inotify
                     .watches()
-                    .add(&db_path, watch_mask)
+                    .add(&dir_path, watch_mask)
                     .expect("Failed to add watch");
 
                 let mut buffer = [0; 1024];
+                let mut last_backup = Instant::now() - Duration::from_secs(1);
                 loop {
                     let events = inotify
                         .read_events_blocking(&mut buffer)
                         .expect("Failed to read inotify events");
                     for event in events {
                         if masks.iter().any(|mask| event.mask.contains(*mask)) {
-                            self.backup_directory_contents()
-                                .await
-                                .expect("Failed to backup directory contents");
+                            // Check if at least one second has passed since the last backup
+                            if last_backup.elapsed() >= Duration::from_secs(1) {
+                                info!("Event: {:?}, triggered backup", event.mask);
+                                self.backup_directory_contents()
+                                    .await
+                                    .expect("Failed to backup directory contents");
+                                // Update the last backup time
+                                last_backup = Instant::now();
+                            } else {
+                                info!("Rate limit enforced, backup skipped");
+                            }
                         }
                     }
                 }
@@ -100,7 +117,7 @@ impl Backuplit {
 }
 
 pub struct BackuplitBuilder {
-    pub db_path: PathBuf,
+    pub dir_path: PathBuf,
     pub bucket_id: String,
     pub credential: String,
     pub backup_name: Option<String>,
@@ -110,7 +127,7 @@ pub struct BackuplitBuilder {
 impl BackuplitBuilder {
     pub fn new() -> Self {
         Self {
-            db_path: PathBuf::new(),
+            dir_path: PathBuf::new(),
             backup_name: None,
             bucket_id: String::new(),
             credential: String::new(),
@@ -118,8 +135,8 @@ impl BackuplitBuilder {
         }
     }
 
-    pub fn db_path(mut self, db_path: PathBuf) -> Self {
-        self.db_path = db_path;
+    pub fn dir_path(mut self, dir_path: PathBuf) -> Self {
+        self.dir_path = dir_path;
         self
     }
 
@@ -145,7 +162,7 @@ impl BackuplitBuilder {
 
     pub fn build(self) -> Backuplit {
         Backuplit {
-            db_path: self.db_path,
+            dir_path: self.dir_path,
             credential: self.credential,
             bucket_id: self.bucket_id,
             backup_name: self.backup_name,
