@@ -7,7 +7,7 @@ license = "MIT"
 
 [[bin]]
 name = "backuplit_worker"
-path = "src/backup_worker.rs"
+path = "src/main.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -15,7 +15,7 @@ path = "src/backup_worker.rs"
 anyhow = "1.0.81"
 clap = "4.5.4"
 flate2 = "1.0.28"
-google-cloud = "0.2.1"
+google-cloud = { version = "0.2.1", features = ["storage"] }
 inotify = "0.10.2"
 tar = "0.4.40"
 tokio = { version = "1.37.0", features = ["full"] }

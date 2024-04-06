@@ -21,7 +21,7 @@ impl Default for BackupTrigger {
     }
 }
 
-pub struct GcFsBackup {
+pub struct Backuplit {
     db_path: PathBuf,
     backup_name: Option<String>,
     bucket_id: String,
@@ -29,7 +29,7 @@ pub struct GcFsBackup {
     backup_trigger: BackupTrigger,
 }
 
-impl GcFsBackup {
+impl Backuplit {
     pub async fn backup_directory_contents(&self) -> Result<(), anyhow::Error> {
         let dir_path = &self.db_path;
         let bucket_id = &self.bucket_id;
@@ -99,7 +99,7 @@ impl GcFsBackup {
     }
 }
 
-pub struct GcFsBackupBuilder {
+pub struct BackuplitBuilder {
     pub db_path: PathBuf,
     pub bucket_id: String,
     pub credential: String,
@@ -107,7 +107,7 @@ pub struct GcFsBackupBuilder {
     pub backup_trigger: BackupTrigger,
 }
 
-impl GcFsBackupBuilder {
+impl BackuplitBuilder {
     pub fn new() -> Self {
         Self {
             db_path: PathBuf::new(),
@@ -143,8 +143,8 @@ impl GcFsBackupBuilder {
         self
     }
 
-    pub fn build(self) -> GcFsBackup {
-        GcFsBackup {
+    pub fn build(self) -> Backuplit {
+        Backuplit {
             db_path: self.db_path,
             credential: self.credential,
             bucket_id: self.bucket_id,
