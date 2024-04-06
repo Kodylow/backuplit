@@ -2,7 +2,7 @@
 name = "backuplit"
 version = "0.1.0"
 edition = "2021"
-description = "Backup a directory on a local filesystem to Google Cloud Storage"
+description = "Backup a directory on a linux filesystem to Google Cloud Storage"
 license = "MIT"
 
 [[bin]]
