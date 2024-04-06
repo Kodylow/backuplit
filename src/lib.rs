@@ -65,52 +65,79 @@ impl Backuplit {
         Ok(())
     }
 
+    async fn handle_interval_trigger(&self, duration: &Duration) {
+        loop {
+            sleep(*duration).await;
+            info!("Interval backup triggered");
+            self.backup_directory_contents()
+                .await
+                .expect("Failed to backup directory contents");
+        }
+    }
+
+    async fn process_events_and_backup(
+        &self,
+        inotify: &mut Inotify,
+        buffer: &mut [u8; 1024],
+        masks: &[EventMask],
+        last_backup: &mut Instant,
+        debounce_duration: Duration,
+    ) -> Result<(), anyhow::Error> {
+        let events = inotify
+            .read_events_blocking(buffer)
+            .expect("Failed to read inotify events");
+        if events
+            .into_iter()
+            .any(|event| masks.iter().any(|mask| event.mask.contains(*mask)))
+        {
+            if last_backup.elapsed() >= debounce_duration {
+                info!("Debounced backup triggered");
+                self.backup_directory_contents().await?;
+                *last_backup = Instant::now();
+            } else {
+                info!("Rate limit enforced, backup skipped");
+            }
+        }
+
+        Ok(())
+    }
+
+    async fn handle_event_mask_trigger(&self, masks: &[EventMask]) {
+        let dir_path = self.dir_path.clone();
+        let mut inotify = Inotify::init().expect("Failed to initialize inotify");
+        let watch_mask = masks.iter().fold(WatchMask::empty(), |acc, mask| {
+            acc | WatchMask::from_bits_truncate(mask.bits())
+        });
+        inotify
+            .watches()
+            .add(&dir_path, watch_mask)
+            .expect("Failed to add watch");
+
+        let mut buffer = [0; 1024];
+        let mut last_backup = Instant::now();
+        let debounce_duration = Duration::from_secs(1);
+        loop {
+            self.process_events_and_backup(
+                &mut inotify,
+                &mut buffer,
+                masks,
+                &mut last_backup,
+                debounce_duration,
+            )
+            .await
+            .expect("Failed to process events for backup");
+        }
+    }
+
     pub async fn watch_and_backup(&self) {
         match &self.backup_trigger {
             BackupTrigger::Interval(duration) => {
                 info!(?duration, "Starting interval-based backup trigger");
-                loop {
-                    sleep(*duration).await;
-                    info!("Interval backup triggered");
-                    self.backup_directory_contents()
-                        .await
-                        .expect("Failed to backup directory contents");
-                }
+                self.handle_interval_trigger(duration).await;
             }
             BackupTrigger::EventMasks(masks) => {
                 info!(?masks, "Starting event masks-based backup trigger");
-                let dir_path = self.dir_path.clone();
-                let mut inotify = Inotify::init().expect("Failed to initialize inotify");
-                let watch_mask = masks.iter().fold(WatchMask::empty(), |acc, mask| {
-                    acc | WatchMask::from_bits_truncate(mask.bits())
-                });
-                inotify
-                    .watches()
-                    .add(&dir_path, watch_mask)
-                    .expect("Failed to add watch");
-
-                let mut buffer = [0; 1024];
-                let mut last_backup = Instant::now() - Duration::from_secs(1);
-                loop {
-                    let events = inotify
-                        .read_events_blocking(&mut buffer)
-                        .expect("Failed to read inotify events");
-                    for event in events {
-                        if masks.iter().any(|mask| event.mask.contains(*mask)) {
-                            // Check if at least one second has passed since the last backup
-                            if last_backup.elapsed() >= Duration::from_secs(1) {
-                                info!("Event: {:?}, triggered backup", event.mask);
-                                self.backup_directory_contents()
-                                    .await
-                                    .expect("Failed to backup directory contents");
-                                // Update the last backup time
-                                last_backup = Instant::now();
-                            } else {
-                                info!("Rate limit enforced, backup skipped");
-                            }
-                        }
-                    }
-                }
+                self.handle_event_mask_trigger(masks).await;
             }
         }
     }

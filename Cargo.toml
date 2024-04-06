@@ -1,12 +1,12 @@
 [package]
 name = "backuplit"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Backup a directory on a linux filesystem to Google Cloud Storage"
 license = "MIT"
 
 [[bin]]
-name = "backuplit_worker"
+name = "backuplit"
 path = "src/main.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
