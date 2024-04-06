@@ -27,13 +27,13 @@
           paths = [ "Cargo.toml" "Cargo.lock" ".cargo" "src" ];
         };
 
-        # toolchainArgs = {
-        #   extraRustFlags = "--cfg tokio_unstable";
-        # } // lib.optionalAttrs pkgs.stdenv.isDarwin {
-        #   # on Darwin newest stdenv doesn't seem to work
-        #   # linking rocksdb
-        #   stdenv = pkgs.clang11Stdenv;
-        # };
+        toolchainArgs = {
+          # extraRustFlags = "--cfg tokio_unstable";
+        } // lib.optionalAttrs pkgs.stdenv.isDarwin {
+          # on Darwin newest stdenv doesn't seem to work
+          # linking rocksdb
+          stdenv = pkgs.clang11Stdenv;
+        };
 
         # all standard toolchains provided by flakebox
         toolchainsStd = flakeboxLib.mkStdFenixToolchains toolchainArgs;
