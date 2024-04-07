@@ -1,6 +1,6 @@
 [package]
 name = "backuplit"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 description = "Backup a directory on a linux filesystem to Google Cloud Storage"
 license = "MIT"
@@ -31,7 +31,7 @@ lto = "thin"
 # Config for 'cargo dist'
 [workspace.metadata.dist]
 # The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
-cargo-dist-version = "0.12.2"
+cargo-dist-version = "0.4.3"
 # CI backends to support
 ci = ["github"]
 # The installers to generate for each app
@@ -39,6 +39,6 @@ installers = ["shell"]
 # Target platforms to build apps for (Rust target-triple syntax)
 targets = ["x86_64-unknown-linux-gnu", "x86_64-unknown-linux-musl"]
 # Publish jobs to run in CI
-pr-run-mode = "plan"
+pr-run-mode = "upload"
 # Whether to install an updater program
 install-updater = true
