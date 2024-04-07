@@ -65,13 +65,11 @@ impl Backuplit {
         Ok(())
     }
 
-    async fn handle_interval_trigger(&self, duration: &Duration) {
+    async fn handle_interval_trigger(&self, duration: &Duration) -> Result<(), anyhow::Error> {
         loop {
             sleep(*duration).await;
             info!("Interval backup triggered");
-            self.backup_directory_contents()
-                .await
-                .expect("Failed to backup directory contents");
+            self.backup_directory_contents().await?;
         }
     }
 
@@ -85,7 +83,7 @@ impl Backuplit {
     ) -> Result<(), anyhow::Error> {
         let events = inotify
             .read_events_blocking(buffer)
-            .expect("Failed to read inotify events");
+            .map_err(|e| anyhow::anyhow!("Failed to read inotify events: {}", e))?;
         if events
             .into_iter()
             .any(|event| masks.iter().any(|mask| event.mask.contains(*mask)))
@@ -102,16 +100,17 @@ impl Backuplit {
         Ok(())
     }
 
-    async fn handle_event_mask_trigger(&self, masks: &[EventMask]) {
+    async fn handle_event_mask_trigger(&self, masks: &[EventMask]) -> Result<(), anyhow::Error> {
         let dir_path = self.dir_path.clone();
-        let mut inotify = Inotify::init().expect("Failed to initialize inotify");
+        let mut inotify =
+            Inotify::init().map_err(|e| anyhow::anyhow!("Failed to initialize inotify: {}", e))?;
         let watch_mask = masks.iter().fold(WatchMask::empty(), |acc, mask| {
             acc | WatchMask::from_bits_truncate(mask.bits())
         });
         inotify
             .watches()
             .add(&dir_path, watch_mask)
-            .expect("Failed to add watch");
+            .map_err(|e| anyhow::anyhow!("Failed to add watch: {}", e))?;
 
         let mut buffer = [0; 1024];
         let mut last_backup = Instant::now();
@@ -125,19 +124,19 @@ impl Backuplit {
                 debounce_duration,
             )
             .await
-            .expect("Failed to process events for backup");
+            .map_err(|e| anyhow::anyhow!("Failed to process events for backup: {}", e))?;
         }
     }
 
-    pub async fn watch_and_backup(&self) {
+    pub async fn watch_and_backup(&self) -> Result<(), anyhow::Error> {
         match &self.backup_trigger {
             BackupTrigger::Interval(duration) => {
                 info!(?duration, "Starting interval-based backup trigger");
-                self.handle_interval_trigger(duration).await;
+                self.handle_interval_trigger(duration).await
             }
             BackupTrigger::EventMasks(masks) => {
                 info!(?masks, "Starting event masks-based backup trigger");
-                self.handle_event_mask_trigger(masks).await;
+                self.handle_event_mask_trigger(masks).await
             }
         }
     }

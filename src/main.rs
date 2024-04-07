@@ -34,7 +34,8 @@ async fn main() -> Result<(), anyhow::Error> {
         .pretty()
         .finish();
 
-    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+    tracing::subscriber::set_global_default(subscriber)
+        .map_err(|e| anyhow::anyhow!("setting default subscriber failed: {}", e))?;
 
     info!("Application starting up");
 
@@ -52,7 +53,7 @@ async fn main() -> Result<(), anyhow::Error> {
     info!("BackuplitBuilder configured with directory path: {:?}, bucket ID: {}, credentials: REDACTED, backup name: {}",
         cli.dir_path, cli.bucket_id, cli.backup_name);
 
-    b.watch_and_backup().await;
+    b.watch_and_backup().await?;
 
     Ok(())
 }
