@@ -197,3 +197,9 @@ impl BackuplitBuilder {
         }
     }
 }
+
+impl Default for BackuplitBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}

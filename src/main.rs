@@ -1,6 +1,7 @@
+use std::path::PathBuf;
+
 use backuplit::BackuplitBuilder;
 use clap::Parser;
-use std::path::PathBuf;
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
 
@@ -42,7 +43,7 @@ async fn main() -> Result<(), anyhow::Error> {
     info!("Parsed CLI arguments");
 
     let b = BackuplitBuilder::new()
-        .dir_path(cli.dir_path.clone().into())
+        .dir_path(cli.dir_path.clone())
         .bucket_id(cli.bucket_id.clone())
         .credential(cli.credential.clone())
         .backup_name(cli.backup_name.clone())
