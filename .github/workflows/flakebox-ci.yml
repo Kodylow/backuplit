@@ -9,7 +9,7 @@ jobs:
     - name: Install Nix
       uses: DeterminateSystems/nix-installer-action@v10
     - name: Magic Nix Cache
-      uses: DeterminateSystems/magic-nix-cache-action@v2
+      uses: DeterminateSystems/magic-nix-cache-action@v4
     - name: Build on ${{ matrix.host }}
       run: 'nix flake check -L .#
 
@@ -48,7 +48,7 @@ jobs:
     - name: Install Nix
       uses: DeterminateSystems/nix-installer-action@v10
     - name: Magic Nix Cache
-      uses: DeterminateSystems/magic-nix-cache-action@v2
+      uses: DeterminateSystems/magic-nix-cache-action@v4
     - name: Cargo Cache
       uses: actions/cache@v4
       with:
