@@ -50,7 +50,7 @@ impl Backuplit {
         let tarball_data = Vec::new();
         let gz_encoder = GzEncoder::new(tarball_data, Compression::default());
         let mut ar = Builder::new(gz_encoder);
-        ar.append_dir_all(&backup_name, dir_path)?;
+        ar.append_dir_all(backup_name, dir_path)?;
 
         let gz_encoder = ar.into_inner()?;
         let compressed_tarball_bytes = gz_encoder.finish()?;
