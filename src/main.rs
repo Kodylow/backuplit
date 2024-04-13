@@ -8,16 +8,21 @@ use tracing_subscriber::FmtSubscriber;
 #[derive(Parser)]
 #[clap(version = "1.0", author = "Kody Low <kodylow7@gmail.com>")]
 struct Cli {
-    /// Sets the database path to backup
+    /// Sets the directory path to backup
     #[clap(long, value_name = "DIR_PATH", env = "DIR_PATH", required = true)]
     dir_path: PathBuf,
 
-    /// Sets the bucket ID for the backup
-    #[clap(long, value_name = "BUCKET_ID", env = "BUCKET_ID", required = true)]
-    bucket_id: String,
+    /// Sets the bucket name for the backup
+    #[clap(long, value_name = "BUCKET_NAME", env = "BUCKET_NAME", required = true)]
+    bucket_name: String,
 
     /// Sets the credentials for accessing the storage
-    #[clap(long, value_name = "CREDENTIAL", env = "CREDENTIAL", required = true)]
+    #[clap(
+        long,
+        value_name = "GOOGLE_APPLICATION_CREDENTIALS",
+        env = "GOOGLE_APPLICATION_CREDENTIALS",
+        required = true
+    )]
     credential: String,
 
     /// Sets the name for the backup
@@ -37,7 +42,7 @@ async fn main() -> Result<(), anyhow::Error> {
     tracing::subscriber::set_global_default(subscriber)
         .map_err(|e| anyhow::anyhow!("setting default subscriber failed: {}", e))?;
 
-    info!("Application starting up");
+    info!("Starting backuplit");
 
     let cli: Cli = Cli::parse();
 
@@ -45,15 +50,15 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let b = BackuplitBuilder::new()
         .dir_path(cli.dir_path.clone())
-        .bucket_id(cli.bucket_id.clone())
-        .credential(cli.credential.clone())
+        .bucket_name(cli.bucket_name.clone())
         .backup_name(cli.backup_name.clone())
-        .build();
+        .build()
+        .await?;
 
-    info!("BackuplitBuilder configured with directory path: {:?}, bucket ID: {}, credentials: REDACTED, backup name: {}",
-        cli.dir_path, cli.bucket_id, cli.backup_name);
+    info!("BackuplitBuilder configured with directory path: {:?}, bucket name: {}, credentials: REDACTED, backup name: {}",
+        cli.dir_path, cli.bucket_name, cli.backup_name);
 
-    b.watch_and_backup().await?;
+    b.watch().await?;
 
     Ok(())
 }

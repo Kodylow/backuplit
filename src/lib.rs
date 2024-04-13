@@ -4,12 +4,15 @@ use std::time::Duration;
 
 use flate2::write::GzEncoder;
 use flate2::Compression;
+use google_cloud_storage::client::{Client, ClientConfig};
+use google_cloud_storage::http::objects::upload::{Media, UploadObjectRequest, UploadType};
 use inotify::{EventMask, Inotify, WatchMask};
 use tar::Builder;
 use tokio::sync::Mutex;
 use tokio::time::{sleep, Instant};
 use tracing::info;
 
+#[derive(Clone)]
 pub enum BackupTrigger {
     Interval(Duration),
     EventMasks(Vec<EventMask>),
@@ -28,11 +31,12 @@ impl Default for BackupTrigger {
     }
 }
 
+#[derive(Clone)]
 pub struct Backuplit {
+    client: Arc<Mutex<Client>>,
+    bucket_name: String,
     dir_path: PathBuf,
-    backup_name: Option<String>,
-    bucket_id: String,
-    credential: String,
+    backup_name: String,
     backup_trigger: BackupTrigger,
 }
 
@@ -40,24 +44,30 @@ impl Backuplit {
     pub async fn backup_directory_contents(&self) -> Result<(), anyhow::Error> {
         info!("Starting backup of directory contents");
         let dir_path = &self.dir_path;
-        let bucket_id = &self.bucket_id;
-        let credential = &self.credential;
+        let bucket_name = &self.bucket_name;
+        let backup_name = &self.backup_name;
 
         let tarball_data = Vec::new();
         let gz_encoder = GzEncoder::new(tarball_data, Compression::default());
         let mut ar = Builder::new(gz_encoder);
-        let backup_name = self.backup_name.clone().unwrap_or("backup".to_string());
         ar.append_dir_all(&backup_name, dir_path)?;
 
         let gz_encoder = ar.into_inner()?;
         let compressed_tarball_bytes = gz_encoder.finish()?;
+        let backup_name_str = backup_name.clone();
+        let upload_type = UploadType::Simple(Media::new(backup_name_str));
 
-        let client = Arc::new(Mutex::new(
-            google_cloud::storage::Client::new(credential).await?,
-        ));
-        let mut bucket = client.lock().await.bucket(bucket_id).await?;
-        bucket
-            .create_object(&backup_name, compressed_tarball_bytes, "application/gzip")
+        self.client
+            .lock()
+            .await
+            .upload_object(
+                &UploadObjectRequest {
+                    bucket: bucket_name.clone(),
+                    ..Default::default()
+                },
+                compressed_tarball_bytes,
+                &upload_type,
+            )
             .await?;
 
         info!("Directory backup completed successfully");
@@ -128,7 +138,7 @@ impl Backuplit {
         }
     }
 
-    pub async fn watch_and_backup(&self) -> Result<(), anyhow::Error> {
+    pub async fn watch(&self) -> Result<(), anyhow::Error> {
         match &self.backup_trigger {
             BackupTrigger::Interval(duration) => {
                 info!(?duration, "Starting interval-based backup trigger");
@@ -144,9 +154,8 @@ impl Backuplit {
 
 pub struct BackuplitBuilder {
     pub dir_path: PathBuf,
-    pub bucket_id: String,
-    pub credential: String,
-    pub backup_name: Option<String>,
+    pub bucket_name: String,
+    pub backup_name: String,
     pub backup_trigger: BackupTrigger,
 }
 
@@ -154,9 +163,8 @@ impl BackuplitBuilder {
     pub fn new() -> Self {
         Self {
             dir_path: PathBuf::new(),
-            backup_name: None,
-            bucket_id: String::new(),
-            credential: String::new(),
+            backup_name: String::new(),
+            bucket_name: String::new(),
             backup_trigger: BackupTrigger::default(),
         }
     }
@@ -167,17 +175,12 @@ impl BackuplitBuilder {
     }
 
     pub fn backup_name(mut self, backup_name: String) -> Self {
-        self.backup_name = Some(backup_name);
+        self.backup_name = backup_name;
         self
     }
 
-    pub fn bucket_id(mut self, bucket_id: String) -> Self {
-        self.bucket_id = bucket_id;
-        self
-    }
-
-    pub fn credential(mut self, credential: String) -> Self {
-        self.credential = credential;
+    pub fn bucket_name(mut self, bucket_name: String) -> Self {
+        self.bucket_name = bucket_name;
         self
     }
 
@@ -186,14 +189,16 @@ impl BackuplitBuilder {
         self
     }
 
-    pub fn build(self) -> Backuplit {
-        Backuplit {
+    pub async fn build(self) -> Result<Backuplit, anyhow::Error> {
+        let config = ClientConfig::default().with_auth().await?;
+        let client = Arc::new(Mutex::new(Client::new(config)));
+        Ok(Backuplit {
+            client,
             dir_path: self.dir_path,
-            credential: self.credential,
-            bucket_id: self.bucket_id,
+            bucket_name: self.bucket_name,
             backup_name: self.backup_name,
             backup_trigger: self.backup_trigger,
-        }
+        })
     }
 }
 

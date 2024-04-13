@@ -2,3 +2,5 @@
 .cargo
 credentials.json
 /test
+
+.env
