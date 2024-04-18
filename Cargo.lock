@@ -514,9 +514,9 @@ checksum = "4271d37baee1b8c7e4b708028c57d816cf9d2434acb33a549475f78c181f6253"
 
 [[package]]
 name = "google-cloud-auth"
-version = "0.13.2"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3bf7cb7864f08a92e77c26bb230d021ea57691788fb5dd51793f96965d19e7f9"
+checksum = "fe54dd8b6eb2bcd5390998238bcc39d1daed4dbb70df2845832532540384fc41"
 dependencies = [
  "async-trait",
  "base64 0.21.7",
@@ -547,9 +547,9 @@ dependencies = [
 
 [[package]]
 name = "google-cloud-storage"
-version = "0.16.0"
+version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11e8a2f70d56feb2dd53d9649df048a833add396c8932c9edbad18c6c7f6a18a"
+checksum = "0abf8bc6677b763a553fa47dc43a6bc49e62eb4f4b2eed812622f0e653670c07"
 dependencies = [
  "anyhow",
  "async-stream",
