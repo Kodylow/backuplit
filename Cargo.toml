@@ -16,7 +16,7 @@ path = "src/main.rs"
 anyhow = "1.0.82"
 clap = { version = "4.4.13", features = ["derive", "env"] }
 flate2 = "1.0.30"
-google-cloud-storage = "0.17.0"
+google-cloud-storage = "0.18.0"
 inotify = "0.10.2"
 tar = "0.4.40"
 tokio = { version = "1.37.0", features = ["full"] }
