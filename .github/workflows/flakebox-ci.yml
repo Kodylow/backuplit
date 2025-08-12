@@ -5,7 +5,7 @@ jobs:
     name: Build
     runs-on: ${{ matrix.runs-on }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v19
       - name: Magic Nix Cache
@@ -27,7 +27,7 @@ jobs:
     name: Flake self-check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check Nix flake inputs
         uses: DeterminateSystems/flake-checker-action@v12
         with:
@@ -36,7 +36,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v19
       - name: Magic Nix Cache
