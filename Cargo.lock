@@ -162,11 +162,11 @@ checksum = "34efbcccd345379ca2868b2b2c9d3782e9cc58ba87bc7d79d5b53d9c9ae6f25d"
 
 [[package]]
 name = "block-buffer"
-version = "0.10.4"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71"
+checksum = "cdd35008169921d80bc60d3d0ab416eecb028c4cd653352907921d95084790be"
 dependencies = [
- "generic-array",
+ "hybrid-array",
 ]
 
 [[package]]
@@ -221,7 +221,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6f8d983286843e49675a4b7a2d174efe136dc93a18d69130dd18198a6c167601"
 dependencies = [
  "cfg-if",
- "cpufeatures 0.3.0",
+ "cpufeatures",
  "rand_core 0.10.0",
 ]
 
@@ -287,6 +287,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "cmov"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f88a43d011fc4a6876cb7344703e297c71dda42494fee094d5f7c76bf13f746"
+
+[[package]]
 name = "colorchoice"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -320,15 +326,6 @@ checksum = "06ea2b9bc92be3c2baa9334a323ebca2d6f074ff852cd1d7b11064035cd3868f"
 
 [[package]]
 name = "cpufeatures"
-version = "0.2.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53fe5e26ff1b7aef8bca9c6080520cfb8d9333c7568e1829cef191a9723e5504"
-dependencies = [
- "libc",
-]
-
-[[package]]
-name = "cpufeatures"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b2a41393f66f16b0823bb79094d54ac5fbd34ab292ddafb9a0456ac9f87d201"
@@ -356,12 +353,20 @@ dependencies = [
 
 [[package]]
 name = "crypto-common"
-version = "0.1.6"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1bfb12502f3fc46cca1bb51ac28df9d618d813cdc3d2f25b9fe775a34af26bb3"
+checksum = "77727bb15fa921304124b128af125e7e3b968275d1b108b379190264f4423710"
 dependencies = [
- "generic-array",
- "typenum",
+ "hybrid-array",
+]
+
+[[package]]
+name = "ctutils"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d5515a3834141de9eafb9717ad39eea8247b5674e6066c404e8c4b365d2a29e"
+dependencies = [
+ "cmov",
 ]
 
 [[package]]
@@ -411,13 +416,13 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.10.7"
+version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292"
+checksum = "4850db49bf08e663084f7fb5c87d202ef91a3907271aff24a94eb97ff039153c"
 dependencies = [
  "block-buffer",
  "crypto-common",
- "subtle",
+ "ctutils",
 ]
 
 [[package]]
@@ -591,16 +596,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "generic-array"
-version = "0.14.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85649ca51fd72272d7821adaf274ad91c288277713d9c18820d8499a7ff69e9a"
-dependencies = [
- "typenum",
- "version_check",
-]
-
-[[package]]
 name = "getrandom"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -643,9 +638,9 @@ dependencies = [
 
 [[package]]
 name = "google-cloud-auth"
-version = "1.8.0"
+version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "27e658fc9f8b6bdf9a5c816ebca6dd6bcd32f8550e5c6580652b2c0eac1980f6"
+checksum = "54a26c047222f874ea87177368ad07c65a9f66534ad3a3f9401f1322c802ccac"
 dependencies = [
  "async-trait",
  "base64",
@@ -670,9 +665,9 @@ dependencies = [
 
 [[package]]
 name = "google-cloud-gax"
-version = "1.9.0"
+version = "1.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "505f3e57fbb875646b25c3ccc859c6446bfa411e1958d267bab288980e5afa19"
+checksum = "7dc387965cc2efc28d73896d6707125815c16792c23c33a0c67794f3d6e31cc8"
 dependencies = [
  "base64",
  "bytes",
@@ -690,9 +685,9 @@ dependencies = [
 
 [[package]]
 name = "google-cloud-gax-internal"
-version = "0.7.11"
+version = "0.7.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "65d462b4fcee5f495bfb58edbf4a9250c230a1079d410bdcb8505bc5f713dcee"
+checksum = "9529b797c68dc5c9d37effe7faa5d96d683a00e728287a9934bf6d3a86b58706"
 dependencies = [
  "bytes",
  "futures",
@@ -700,6 +695,7 @@ dependencies = [
  "google-cloud-gax",
  "google-cloud-rpc",
  "google-cloud-wkt",
+ "h2",
  "http",
  "http-body",
  "http-body-util",
@@ -728,9 +724,9 @@ dependencies = [
 
 [[package]]
 name = "google-cloud-iam-v1"
-version = "1.7.0"
+version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30ce870ac18f3e0a474000cd57eab8bf3c64af8b5ed820468df8612182709c9a"
+checksum = "103d11cc828e7f33759c4dc6618a98415786fabba268147028e607c4fe1199aa"
 dependencies = [
  "async-trait",
  "bytes",
@@ -746,9 +742,9 @@ dependencies = [
 
 [[package]]
 name = "google-cloud-longrunning"
-version = "1.8.0"
+version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ebab215997c51f786852840fec8c76174b8a4af96d08e5fc1569742805baab09"
+checksum = "fa340b46d452fcd5e701b21dab6ed187454b6f1e4300e0bdb928fceefac847fa"
 dependencies = [
  "async-trait",
  "bytes",
@@ -764,9 +760,9 @@ dependencies = [
 
 [[package]]
 name = "google-cloud-lro"
-version = "1.4.0"
+version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82a4f93a1ec8e6e5448899877ea6021e0f5d06e6b08ccd9b0bd99bc837ca357b"
+checksum = "3bfd3fa41649a3cd53675a94988b7d3789f2d8f2eb1b24af237450fe08ae9643"
 dependencies = [
  "google-cloud-gax",
  "google-cloud-longrunning",
@@ -778,9 +774,9 @@ dependencies = [
 
 [[package]]
 name = "google-cloud-rpc"
-version = "1.3.0"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "691ae06142c69c73bcef2f5c6fa5a6858521aab4cdf1886a6ba70ba1316c7093"
+checksum = "7e3b123ea17ff20539fbdf145e6213e0464cc0a30b0d078a68bf90405ef17fb7"
 dependencies = [
  "bytes",
  "google-cloud-wkt",
@@ -791,9 +787,9 @@ dependencies = [
 
 [[package]]
 name = "google-cloud-storage"
-version = "1.10.0"
+version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f85a4e9a65a2f2c3a1d05c1c3b9deb0177a25488128616a3a96195ab5fa41bef"
+checksum = "c4cf4d4e84fd3238cd5f5179b0a8e424c7ccc8106423a9fad627ae27ebc2b7b4"
 dependencies = [
  "async-trait",
  "base64",
@@ -833,9 +829,9 @@ dependencies = [
 
 [[package]]
 name = "google-cloud-type"
-version = "1.3.0"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c310636aa7b660539c3f9259ae7a1fa2fd8bd7965a471bf6467094493cdb715a"
+checksum = "bbcae00eb50388f5127e65cf2d45679fc4ec0e3596975bb6ec41aec6319a51c9"
 dependencies = [
  "bytes",
  "google-cloud-wkt",
@@ -846,9 +842,9 @@ dependencies = [
 
 [[package]]
 name = "google-cloud-wkt"
-version = "1.0.0"
+version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cccfa292c272695eb966fe8b08c78cabb35e7775771a1c7f97b58f7dcb7bfb26"
+checksum = "0b30ccefdb9276269bb0336afe207c5e0ba1a544a5eb0034763af051f2b9eb63"
 dependencies = [
  "base64",
  "bytes",
@@ -862,9 +858,9 @@ dependencies = [
 
 [[package]]
 name = "h2"
-version = "0.4.12"
+version = "0.4.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3c0b69cfcb4e1b9f1bf2f53f95f766e4661169728ec61cd3fe5a0166f2d1386"
+checksum = "2f44da3a8150a6703ed5d34e164b875fd14c2cdab9af1252a9a1020bde2bdc54"
 dependencies = [
  "atomic-waker",
  "bytes",
@@ -908,9 +904,9 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
 name = "hmac"
-version = "0.12.1"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c49c37c09c17a53d937dfbb742eb3a961d65a994e6bcdcf37e7399d0cc8ab5e"
+checksum = "6303bc9732ae41b04cb554b844a762b4115a61bfaa81e3e83050991eeb56863f"
 dependencies = [
  "digest",
 ]
@@ -954,6 +950,15 @@ name = "httparse"
 version = "1.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6dbf3de79e51f3d586ab4cb9d5c3e2c14aa28ed23d180cf89b4df0454a69cc87"
+
+[[package]]
+name = "hybrid-array"
+version = "0.4.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3944cf8cf766b40e2a1a333ee5e9b563f854d5fa49d6a8ca2764e97c6eddb214"
+dependencies = [
+ "typenum",
+]
 
 [[package]]
 name = "hyper"
@@ -1741,9 +1746,9 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.23.37"
+version = "0.23.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "758025cb5fccfd3bc2fd74708fd4682be41d99e5dff73c377c0646c6012c73a4"
+checksum = "69f9466fb2c14ea04357e91413efb882e2a6d4a406e625449bc0a5d360d53a21"
 dependencies = [
  "aws-lc-rs",
  "log",
@@ -1967,12 +1972,12 @@ dependencies = [
 
 [[package]]
 name = "sha2"
-version = "0.10.8"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "793db75ad2bcafc3ffa7c68b215fee268f537982cd901d132f89c6343f3a3dc8"
+checksum = "446ba717509524cb3f22f17ecc096f10f4822d76ab5c0b9822c5f9c284e825f4"
 dependencies = [
  "cfg-if",
- "cpufeatures 0.2.12",
+ "cpufeatures",
  "digest",
 ]
 
@@ -2474,9 +2479,9 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "uuid"
-version = "1.22.0"
+version = "1.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a68d3c8f01c0cfa54a75291d83601161799e4a89a39e0929f4b0354d88757a37"
+checksum = "5ac8b6f42ead25368cf5b098aeb3dc8a1a2c05a3eee8a9a1a68c640edbfc79d9"
 dependencies = [
  "getrandom 0.4.2",
 ]
