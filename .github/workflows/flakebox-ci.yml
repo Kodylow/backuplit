@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v22
+        uses: DeterminateSystems/nix-installer-action@v23
       - name: Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v14
       - name: Build on ${{ matrix.host }}
@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v22
+        uses: DeterminateSystems/nix-installer-action@v23
       - name: Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v14
       - name: Cargo Cache
